@@ -1,14 +1,290 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Zmanim</title>
-    <link rel="icon" href="your-icon.png" />
-    <link rel="apple-touch-icon" href="your-icon.png" />
-    <meta name="theme-color" content="#000000" />
-  </head>
-  <body style="text-align:center; font-family:sans-serif; padding-top:50px;">
-    <p>Redirecting to Zmanim...</p>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <title>Shkiah Today - ZIP Lookup with Sun Path</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      text-align: center;
+      margin-top: 10vh;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    h1 {
+      margin-bottom: 0.5em;
+    }
+    #clock {
+      font-size: 2.5em;
+      color: #0275d8;
+      margin-bottom: 1em;
+      font-weight: 700;
+      font-family: monospace;
+    }
+    #controls {
+      margin-bottom: 1.5em;
+    }
+    input[type="text"] {
+      font-size: 1.2em;
+      padding: 0.3em 0.5em;
+      width: 120px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      font-size: 1.2em;
+      padding: 0.3em 0.7em;
+      margin-left: 0.5em;
+      cursor: pointer;
+      background-color: #0275d8;
+      border: none;
+      color: white;
+      border-radius: 4px;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #025aa5;
+    }
+    #error {
+      color: red;
+      margin-top: 0.5em;
+      height: 1.2em;
+    }
+    #zmanim {
+      display: flex;
+      justify-content: center;
+      gap: 2.5em;
+      font-weight: 600;
+      margin-bottom: 3em;
+    }
+    .zmanim-item {
+      background: white;
+      padding: 0.8em 1.2em;
+      border-radius: 8px;
+      box-shadow: 0 1px 4px rgb(0 0 0 / 0.1);
+      display: flex;
+      align-items: center;
+      gap: 0.6em;
+      font-size: 1.25em;
+      color: #444;
+      min-width: 150px;
+      flex-direction: column;
+    }
+    .icon-wrapper {
+      width: 40px;
+      height: 40px;
+      color: #f7c044;
+    }
+    .time-text {
+      margin-top: 0.25em;
+      font-size: 1.3em;
+      color: #d9534f;
+    }
+
+    /* Sun Path container */
+    #sunPathContainer {
+      width: 320px;
+      height: 160px;
+      margin: 0 auto 3em auto;
+      position: relative;
+    }
+
+    svg {
+      display: block;
+      margin: 0 auto;
+      overflow: visible;
+    }
+
+    /* Sun icon circle */
+    #sunIcon {
+      fill: #f7c044;
+      stroke: #d87e00;
+      stroke-width: 2;
+      filter: drop-shadow(0 0 2px rgba(215,140,0,0.7));
+      cursor: default;
+      transition: transform 0.5s ease;
+    }
+  </style>
+</head>
+<body>
+  <h1>🕰️ Todays Zmanim</h1>
+  <div id="clock">--:--:--</div>
+
+  <div id="controls">
+    Enter ZIP code: 
+    <input type="text" id="zipInput" maxlength="5" value="48237" pattern="\d{5}" title="Enter 5-digit ZIP code" />
+    <button id="loadBtn">Load</button>
+    <div id="error"></div>
+  </div>
+
+  <div id="zmanim">
+    <div class="zmanim-item" id="sunriseItem" aria-label="Sunrise time">
+      <div class="icon-wrapper" aria-hidden="true">
+        <!-- Sunrise Icon SVG -->
+        <svg viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-sunrise" width="40" height="40">
+          <title>Sunrise</title>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M6.875 6.125 10 3l3.125 3.125-.881.881-1.619-1.612v4.481h-1.25V5.394L7.756 7.006l-.881-.881Zm8.87 2.746-2.191 2.191.884.884 2.19-2.191-.883-.884ZM10 13a2.503 2.503 0 0 1 2.5 2.5h1.25a3.75 3.75 0 0 0-7.5 0H7.5A2.503 2.503 0 0 1 10 13Zm8.75 4.375H1.25v1.25h17.5v-1.25Zm-3.125-3.125h3.125v1.25h-3.125v-1.25ZM4.255 8.871l-.884.884 2.191 2.191.884-.884-2.191-2.19ZM1.25 14.25h3.125v1.25H1.25v-1.25Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <div>
+        <div>Sunrise</div>
+        <div class="time-text" id="sunriseTime">--:--</div>
+      </div>
+    </div>
+    
+    <div class="zmanim-item" id="sofZmanShmaItem" aria-label="Latest Shema time according to the Gra (Alter Rebbe custom)">
+      <div class="icon-wrapper" aria-hidden="true">
+        <!-- Clock Icon SVG -->
+			  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			    <circle cx="12" cy="12" r="10" fill="#F7C044" opacity="0.3"/>
+			    <!-- Shorter hour hand pointing to 9 -->
+			    <line x1="12" y1="12" x2="8" y2="12"/>
+			    <!-- Full length minute hand pointing to 12 -->
+			    <line x1="12" y1="12" x2="12" y2="6"/>
+			  </svg>
+      </div>
+      <div>
+        <div>Latest Shema</div>
+        <div class="time-text" id="sofZmanShmaTime">--:--</div>
+      </div>
+    </div>
+    
+    <div class="zmanim-item" id="sunsetItem" aria-label="Sunset time">
+      <div class="icon-wrapper" aria-hidden="true">
+        <!-- Sunset Icon SVG -->
+        <svg viewBox="0 0 20 21" fill="none" xmlns="http://www.w3.org/2000/svg" class="icon-sunset" width="40" height="40">
+          <title>Sunset</title>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="m10.625 8.11 1.619-1.613.881.88L10 10.504 6.875 7.378l.881-.881 1.619 1.612V3.003h1.25v5.106Zm5.12.764-2.191 2.191.884.884 2.19-2.191-.883-.884ZM10 13.003a2.503 2.503 0 0 1 2.5 2.5h1.25a3.75 3.75 0 0 0-7.5 0H7.5a2.503 2.503 0 0 1 2.5-2.5Zm8.75 4.375H1.25v1.25h17.5v-1.25Zm-3.125-3.125h3.125v1.25h-3.125v-1.25ZM4.255 8.874l-.884.884 2.191 2.19.884-.883-2.191-2.191ZM1.25 14.253h3.125v1.25H1.25v-1.25Z" fill="currentColor"/>
+        </svg>
+      </div>
+      <div>
+        <div>Sunset</div>
+        <div class="time-text" id="sunsetTime">--:--</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="sunPathContainer" aria-label="Sun path from sunrise to sunset">
+    <svg width="320" height="160" viewBox="0 0 320 160" aria-hidden="true" role="presentation">
+      <!-- semi-circle path -->
+      <path id="sunPathArc" d="M20 140 A140 140 0 0 1 300 140" fill="none" stroke="#f7c044" stroke-width="4" opacity="0.5" />
+      <!-- sunrise dot -->
+      <circle cx="20" cy="140" r="6" fill="#f7c044" />
+      <!-- sunset dot -->
+      <circle cx="300" cy="140" r="6" fill="#f7c044" />
+      <!-- sun icon -->
+      <circle id="sunIcon" cx="0" cy="0" r="14" style="display:none" />
+    </svg>
+  </div>
+
+  <script>
+    const clockEl = document.getElementById('clock');
+    const sunriseTimeEl = document.getElementById('sunriseTime');
+    const sunsetTimeEl = document.getElementById('sunsetTime');
+    const sofZmanShmaTimeEl = document.getElementById('sofZmanShmaTime');
+    const zipInput = document.getElementById('zipInput');
+    const loadBtn = document.getElementById('loadBtn');
+    const errorEl = document.getElementById('error');
+
+    // SVG elements for sun path
+    const sunIcon = document.getElementById('sunIcon');
+    const sunPathArc = document.getElementById('sunPathArc');
+
+    // For path length and position
+    const pathLength = sunPathArc.getTotalLength();
+
+    function updateClock() {
+      const now = new Date();
+      clockEl.textContent = now.toLocaleTimeString('en-US', { hour12: true });
+    }
+
+    function positionSunOnPath(percent) {
+      // percent from 0 to 1 along the arc
+      const point = sunPathArc.getPointAtLength(percent * pathLength);
+      sunIcon.setAttribute('cx', point.x);
+      sunIcon.setAttribute('cy', point.y);
+      sunIcon.style.display = 'block';
+    }
+
+    async function loadZmanim(zip) {
+      errorEl.textContent = '';
+      sunriseTimeEl.textContent = 'Loading...';
+      sunsetTimeEl.textContent = 'Loading...';
+      sofZmanShmaTimeEl.textContent = 'Loading...';
+      sunIcon.style.display = 'none';
+
+      try {
+        const res = await fetch(`https://www.hebcal.com/zmanim?cfg=json&zip=${zip}`);
+        if (!res.ok) throw new Error('Invalid response');
+        const data = await res.json();
+
+        if (!data.times) throw new Error('No zmanim data');
+
+        const sunrise = new Date(data.times.sunrise);
+        const sunset = new Date(data.times.sunset);
+
+        const sofZmanShmaRaw = data.times.sofZmanShma;
+        let sofZmanShma;
+
+        if (sofZmanShmaRaw) {
+          sofZmanShma = new Date(sofZmanShmaRaw);
+          if (isNaN(sofZmanShma)) sofZmanShma = null;
+        } else {
+          sofZmanShma = null;
+        }
+
+        const options = { hour: 'numeric', minute: '2-digit', hour12: true };
+
+        sunriseTimeEl.textContent = sunrise.toLocaleTimeString('en-US', options);
+        sunsetTimeEl.textContent = sunset.toLocaleTimeString('en-US', options);
+        
+        if (sofZmanShma) {
+          // Subtract 2 minutes for Alter Rebbe custom zman
+          const alterRebbeZman = new Date(sofZmanShma.getTime() - 2 * 60 * 1000);
+          sofZmanShmaTimeEl.textContent = alterRebbeZman.toLocaleTimeString('en-US', options);
+        } else {
+          sofZmanShmaTimeEl.textContent = '--:--';
+        }
+
+        // Position sun icon on path according to current time
+        const now = new Date();
+
+        if (now < sunrise) {
+          // Before sunrise: hide sun
+          sunIcon.style.display = 'none';
+        } else if (now > sunset) {
+          // After sunset: sun at end of path
+          positionSunOnPath(1);
+        } else {
+          // Between sunrise and sunset: position proportionally
+          const percent = (now - sunrise) / (sunset - sunrise);
+          positionSunOnPath(percent);
+        }
+
+      } catch {
+        sunriseTimeEl.textContent = '--:--';
+        sunsetTimeEl.textContent = '--:--';
+        sofZmanShmaTimeEl.textContent = '--:--';
+        errorEl.textContent = 'Failed to load times. Check ZIP code.';
+        sunIcon.style.display = 'none';
+      }
+    }
+
+    loadBtn.addEventListener('click', () => {
+      const zip = zipInput.value.trim();
+      if (/^\d{5}$/.test(zip)) {
+        loadZmanim(zip);
+      } else {
+        errorEl.textContent = 'Please enter a valid 5-digit ZIP code.';
+      }
+    });
+
+    updateClock();
+    setInterval(updateClock, 1000);
+    loadZmanim(zipInput.value.trim());
+  </script>
+</body>
 </html>
