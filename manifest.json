@@ -1,7 +1,7 @@
 {
   "name": "Zmanim App",
   "short_name": "Zmanim",
-  "start_url": "/index.html",
+  "start_url": "zman/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#000000",
